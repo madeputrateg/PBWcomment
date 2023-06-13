@@ -24,11 +24,7 @@ function Processcomment(comment){
     return hasil;
 }
 
-function post(e){
-    e.preventDefault();
 
-    console.log("prevented")
-}
 
 function init(){
     fetch("http://localhost:8001/comment/all")
@@ -40,7 +36,7 @@ function init(){
             ${val.username} :
             " ${val.comment} "
             (${val.time}) 
-            <form id="add_comment">
+            <form id="reply_comment">
             <input type=text name="comment_id" value=${val.id} style="display:none;"></input>
             <input type=text name="comment" placeholder=comment></input>
             <input type=submit value=reply > </input>
@@ -50,37 +46,128 @@ function init(){
             </div>
             </div>`;
         });
-        comment.innerHTML=isi.join("");
+
+        let data=`         
+        <div>add comment</div>
+        <form id="add_comment">
+        <input type=text name="comment" placeholder=comment></input>
+        <input type=submit value=add > </input>
+        </form>`;
+        data+=isi.join("");
+        comment.innerHTML=data;
     }).then(()=>{
 
         var elms = document.querySelectorAll("[id='add_comment']");
  
         for(var i = 0; i < elms.length; i++) 
-        console.log(elms[i]);
+        {
+            elms[i].addEventListener('submit',function(e){
+                e.preventDefault();
+                user = localStorage.getItem("token_inget")
+                let data={
+                    user_id:user,
+                    comment:e.target["comment"].value
+                }
+                console.log(data)
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8001/comment/add",
+                    contentType: "application/json",
+                    dataType:"json",
+                    data:JSON.stringify(data), 
+                    success: function(data)
+                    {
+                        console.log("done");
+                    }
+                }).then(()=>{
+                    location.reload();
+                })
+                ;
+            });
+        };
+        var reply_elms = document.querySelectorAll("[id='reply_comment']");
+ 
+        for(var i = 0; i < reply_elms.length; i++) 
+        {
+            reply_elms[i].addEventListener('submit',function(e){
+                e.preventDefault();
+                user = localStorage.getItem("token_inget")
+                let data={
+                    user_id:user,
+                    comment_id:e.target["comment_id"].value,
+                    comment:e.target["comment"].value
+                }
+                console.log(data)
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8001/comment/reply",
+                    contentType: "application/json",
+                    dataType:"json",
+                    data:JSON.stringify(data), 
+                    success: function(data)
+                    {
+                        console.log("done");
+                    }
+                })
+                .then(()=>{
+                    location.reload();
+                })
+            });
+        };
+        
     });
 }
- init()
 
+init()
 
+$("#login").submit(function(e) {
+
+    e.preventDefault(); // avoid to execute the actual submit of the form.
+
+    var form = $(this);
+
+    let data={
+        username:e.target["username"].value,
+        password:e.target["password"].value
+    }
+    $.ajax({
+        type: "GET",
+        url: "http://localhost:8001/login",
+        dataType:"json",
+        contentType: "application/json",
+        data:data, // serializes the form's elements.
+        success: function(data)
+        {
+          localStorage.setItem("token_inget",data.token.user_id);// show response from the php script.
+        }
+    });
+    
+});
+
+$("#register").submit(function(e) {
+
+    e.preventDefault(); // avoid to execute the actual submit of the form.
+
+    var form = $(this);
+    let data={
+        username:e.target["username"].value,
+        password:e.target["password"].value
+    }
+    
+    $.ajax({
+        type: "GET",
+        url: "http://localhost:8001/login",
+        dataType:"json",
+        contentType: "application/json",
+        data:data, // serializes the form's elements. // serializes the form's elements.
+        success: function(data)
+        {
+            localStorage.setItem("token_inget",data.token.user_id); // show response from the php script.
+        }
+    });
+    
+});
 
 // this is the id of the form
-$("#comments").submit(function(e) {
 
-e.preventDefault(); // avoid to execute the actual submit of the form.
-
-var form = $(this);
-var actionUrl = form.attr('action');
-console.log(form)
-
-// $.ajax({
-//     type: "POST",
-//     url: actionUrl,
-//     data: form.serialize(), 
-//     success: function(data)
-//     {
-//         alert(data); 
-//     }
-// });
-
-});
 //   comment.innerHTML=`<div>${datas[0]}</div>`

@@ -7,29 +7,19 @@
     <title>Document</title>
 </head>
 <body>
+    <form id="login">
+        <input type="text" value="username" name="username"></input>
+        <input type="text" value="password" name="password"></input>
+        <input type=submit value=login > </input>
+    </form>
+    <form id="register">
+        <input type="text" value="username" name="username"></input>
+        <input type="text" value="password" name="password"></input>
+        <input type="text" value="email" name="email"></input>
+        <input type=submit value=register > </input>
+    </form>
     <div id="comment"></div>
 
 </body>
 <script src="frontend.js"></script>  
-<script type="text/javascript">
-$("#comments").submit(function(e) {
-
-e.preventDefault(); // avoid to execute the actual submit of the form.
-
-var form = $(this);
-var actionUrl = form.attr('action');
-console.log(form)
-
-// $.ajax({
-//     type: "POST",
-//     url: actionUrl,
-//     data: form.serialize(), 
-//     success: function(data)
-//     {
-//         alert(data); 
-//     }
-// });
-
-});
-</script>
 </html>

@@ -37,30 +37,34 @@ app.use(function (req, res, next) {
 app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json())
 app.get(
-    '/login',(req,res)=>{
-        const {username,password} =req.body;
-        con.query("SELECT * FROM user WHERE (username=\""+username+"\" AND password=\""+password+"\")", function (err, result, fields) {
-            if (err) throw err;
-          if (result.length==0){
-              res.status(201).send({message:"error"})
-            }else{
-                res.status(200).send({message:"succes",token:{username:username,user_id:result[0].id}})
+    '/login', async (req,res)=>{
+        const {username,password} =req.query;  
+         try{
+            result=await con.query("SELECT * FROM user WHERE (username=\""+username+"\" AND password=\""+password+"\")") 
+            if (result[0].length==0){
+                res.status(201).send({message:"error"})
+              }else{
+                  res.status(200).send({message:"succes",token:{username:username,user_id:result[0][0].id}})
+              }
             }
-        });
-        
+        catch(err){
+            res.status(201).send({message:"error"})
+        }
     }
 )
 app.post(
-    '/register',(req,res)=>{
+    '/register',async (req,res)=>{
         const {username,email,password} =req.body;
-        con.query("INSERT INTO user(username,password,email) VALUES(\""+username+"\",\""+password+"\",\""+email+"\")", function (err, result, fields) {
-            if (err) throw err;
-            res.status(200).send({message:"succes",token:{username:username,user_id:result.insertId}})
-        });
+        try{
+            result=await con.query("INSERT INTO user(username,password,email) VALUES(\""+username+"\",\""+password+"\",\""+email+"\")");
+            res.status(200).send({message:"succes",token:{username:username,user_id:result[0].insertId}})
+        }catch(err){
+            res.status(201).send({message:"error"})
+        }
     }
 )
 app.post(
-    '/comment/add',(req,res)=>{
+    '/comment/add',async (req,res)=>{
         const {user_id,comment} =req.body;
         con.query("INSERT INTO comment(user_id,comment,time) VALUES("+user_id+",'"+comment+"',NOW());", function (err, result, fields) {
             if (err) throw err;
@@ -69,17 +73,17 @@ app.post(
     }
 )
 app.post(
-    '/comment/reply',(req,res)=>{
+    '/comment/reply',async(req,res)=>{
     const {comment_id,user_id,comment} =req.body;
     var data='';
-        con.query("INSERT INTO comment(user_id,comment,time) VALUES("+user_id+",'"+comment+"',NOW());", function (err, result, fields) {
-            if (err) throw err;
-            data=result.insertId;
-            con.query("INSERT INTO commented(comment_head,commentor) VALUES("+comment_id+","+result.insertId+");", function (err, result, fields) {
-                if (err) throw err;
-                res.status(200).send({message:"succes"})
-            });
-        });
+    try {
+        result=await con.query("INSERT INTO comment(user_id,comment,time) VALUES("+user_id+",'"+comment+"',NOW());")
+        data=result[0].insertId;
+        done= await con.query("INSERT INTO commented(comment_head,commentor) VALUES("+comment_id+","+data+");")
+        res.status(200).send({message:"succes"})
+    }catch(err){
+        res.status(201).send({message:"error"})
+    }
     }
 )
 async function getallcomment(id){
