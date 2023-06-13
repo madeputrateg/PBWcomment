@@ -64,6 +64,10 @@ function init(){
             elms[i].addEventListener('submit',function(e){
                 e.preventDefault();
                 user = localStorage.getItem("token_inget")
+                if (user==null){
+                    alert("login dulu");
+                    return ;
+                }
                 let data={
                     user_id:user,
                     comment:e.target["comment"].value
@@ -92,6 +96,10 @@ function init(){
             reply_elms[i].addEventListener('submit',function(e){
                 e.preventDefault();
                 user = localStorage.getItem("token_inget")
+                if (user==null){
+                    alert("login dulu");
+                    return ;
+                }
                 let data={
                     user_id:user,
                     comment_id:e.target["comment_id"].value,
